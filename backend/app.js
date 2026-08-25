@@ -31,7 +31,9 @@ app.use(cors({
       || origin === 'null'
       || /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin);
 
-    if (isLocalDevelopment || configuredOrigins.includes(origin)) {
+    const isVercelDeployment = origin && /^https:\/\/[a-z0-9-]+\.vercel\.app$/i.test(origin);
+
+    if (isLocalDevelopment || isVercelDeployment || configuredOrigins.includes(origin)) {
       return callback(null, true);
     }
 
@@ -60,6 +62,13 @@ app.get('/api/health', (req, res) => {
 // Manejo de errores 404
 app.use((req, res) => {
   res.status(404).json({ error: 'Ruta no encontrada' });
+});
+
+// Manejador de errores global: asegura que cualquier error (incluido el de CORS)
+// devuelva siempre JSON, nunca la página HTML por defecto de Express.
+app.use((err, req, res, next) => {
+  console.error('Error no controlado:', err.message);
+  res.status(500).json({ error: 'Error interno del servidor' });
 });
 
 module.exports = app;
