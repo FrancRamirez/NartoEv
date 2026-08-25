@@ -1,9 +1,19 @@
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
+const os = require('os');
 
-const uploadDirectory = path.join(__dirname, '..', 'uploads');
-fs.mkdirSync(uploadDirectory, { recursive: true });
+// En Vercel (y en cualquier entorno serverless) el sistema de archivos
+// es de solo lectura salvo /tmp. En local seguimos usando backend/uploads.
+const uploadDirectory = process.env.VERCEL
+  ? path.join(os.tmpdir(), 'uploads')
+  : path.join(__dirname, '..', 'uploads');
+
+try {
+  fs.mkdirSync(uploadDirectory, { recursive: true });
+} catch (err) {
+  console.error('No se pudo crear el directorio de subida:', err.message);
+}
 
 const storage = multer.diskStorage({
   destination: uploadDirectory,
