@@ -11,9 +11,11 @@ const pool = require('../config/db');
 // ========================================
 
 const signup = async (req, res) => {
-  const connection = await pool.getConnection();
-  
+  let connection;
+
   try {
+    connection = await pool.getConnection();
+
     const { nombre, email, password, password_confirm } = req.body;
 
     // Validaciones básicas
@@ -57,7 +59,7 @@ const signup = async (req, res) => {
     console.error('Error en signup:', err);
     res.status(500).json({ error: 'Error al crear la cuenta' });
   } finally {
-    connection.release();
+    if (connection) connection.release();
   }
 };
 
@@ -66,9 +68,11 @@ const signup = async (req, res) => {
 // ========================================
 
 const login = async (req, res) => {
-  const connection = await pool.getConnection();
-  
+  let connection;
+
   try {
+    connection = await pool.getConnection();
+
     const { email, password } = req.body;
 
     if (!email || !password) {
@@ -115,7 +119,7 @@ const login = async (req, res) => {
     console.error('Error en login:', err);
     res.status(500).json({ error: 'Error al iniciar sesión' });
   } finally {
-    connection.release();
+    if (connection) connection.release();
   }
 };
 
@@ -124,9 +128,11 @@ const login = async (req, res) => {
 // ========================================
 
 const verify = async (req, res) => {
-  const connection = await pool.getConnection();
+  let connection;
 
   try {
+    connection = await pool.getConnection();
+
     const token = req.headers.authorization?.split(' ')[1];
 
     if (!token) {
@@ -150,7 +156,7 @@ const verify = async (req, res) => {
   } catch (err) {
     res.status(401).json({ error: 'Token inválido o expirado' });
   } finally {
-    connection.release();
+    if (connection) connection.release();
   }
 };
 

@@ -10,9 +10,11 @@ const pool = require('../config/db');
 // ========================================
 
 const getAllUsers = async (req, res) => {
-  const connection = await pool.getConnection();
-  
+  let connection;
+
   try {
+    connection = await pool.getConnection();
+
     // Verificar si es admin
     if (req.user.role !== 'admin') {
       return res.status(403).json({ error: 'No tienes permisos para ver usuarios' });
@@ -30,7 +32,7 @@ const getAllUsers = async (req, res) => {
     console.error('Error en getAllUsers:', err);
     res.status(500).json({ error: 'Error al obtener usuarios' });
   } finally {
-    connection.release();
+    if (connection) connection.release();
   }
 };
 
@@ -39,9 +41,11 @@ const getAllUsers = async (req, res) => {
 // ========================================
 
 const getUserById = async (req, res) => {
-  const connection = await pool.getConnection();
-  
+  let connection;
+
   try {
+    connection = await pool.getConnection();
+
     const { id } = req.params;
 
     // Verificar permiso: solo el usuario o admin pueden ver su perfil
@@ -66,7 +70,7 @@ const getUserById = async (req, res) => {
     console.error('Error en getUserById:', err);
     res.status(500).json({ error: 'Error al obtener usuario' });
   } finally {
-    connection.release();
+    if (connection) connection.release();
   }
 };
 
@@ -75,9 +79,11 @@ const getUserById = async (req, res) => {
 // ========================================
 
 const updateUser = async (req, res) => {
-  const connection = await pool.getConnection();
-  
+  let connection;
+
   try {
+    connection = await pool.getConnection();
+
     const { id } = req.params;
     const { nombre, email, password } = req.body;
 
@@ -134,7 +140,7 @@ const updateUser = async (req, res) => {
     console.error('Error en updateUser:', err);
     res.status(500).json({ error: 'Error al actualizar usuario' });
   } finally {
-    connection.release();
+    if (connection) connection.release();
   }
 };
 
@@ -143,9 +149,11 @@ const updateUser = async (req, res) => {
 // ========================================
 
 const deleteUser = async (req, res) => {
-  const connection = await pool.getConnection();
-  
+  let connection;
+
   try {
+    connection = await pool.getConnection();
+
     const { id } = req.params;
 
     // Verificar permiso: solo admin puede eliminar usuarios
@@ -184,7 +192,7 @@ const deleteUser = async (req, res) => {
     console.error('Error en deleteUser:', err);
     res.status(500).json({ error: 'Error al eliminar usuario' });
   } finally {
-    connection.release();
+    if (connection) connection.release();
   }
 };
 
@@ -193,9 +201,11 @@ const deleteUser = async (req, res) => {
 // ========================================
 
 const updateUserRole = async (req, res) => {
-  const connection = await pool.getConnection();
+  let connection;
 
   try {
+    connection = await pool.getConnection();
+
     const { id } = req.params;
     const { role } = req.body;
 
@@ -238,7 +248,7 @@ const updateUserRole = async (req, res) => {
     console.error('Error en updateUserRole:', err);
     res.status(500).json({ error: 'Error al actualizar el rol' });
   } finally {
-    connection.release();
+    if (connection) connection.release();
   }
 };
 

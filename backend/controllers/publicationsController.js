@@ -9,9 +9,11 @@ const pool = require('../config/db');
 // ========================================
 
 const createPublication = async (req, res) => {
-  const connection = await pool.getConnection();
-  
+  let connection;
+
   try {
+    connection = await pool.getConnection();
+
     const { nombre, descripcion } = req.body;
     const userId = req.user.id;
 
@@ -34,7 +36,7 @@ const createPublication = async (req, res) => {
     console.error('Error en createPublication:', err);
     res.status(500).json({ error: 'Error al crear publicación' });
   } finally {
-    connection.release();
+    if (connection) connection.release();
   }
 };
 
@@ -43,9 +45,11 @@ const createPublication = async (req, res) => {
 // ========================================
 
 const getUserPublications = async (req, res) => {
-  const connection = await pool.getConnection();
-  
+  let connection;
+
   try {
+    connection = await pool.getConnection();
+
     const userId = req.user.id;
 
     const [publications] = await connection.query(
@@ -73,14 +77,16 @@ const getUserPublications = async (req, res) => {
     console.error('Error en getUserPublications:', err);
     res.status(500).json({ error: 'Error al obtener publicaciones' });
   } finally {
-    connection.release();
+    if (connection) connection.release();
   }
 };
 
 const getPublicPublications = async (req, res) => {
-  const connection = await pool.getConnection();
+  let connection;
 
   try {
+    connection = await pool.getConnection();
+
     const [publications] = await connection.query(
       'SELECT id, nombre, descripcion, created_at FROM publications ORDER BY created_at DESC'
     );
@@ -102,7 +108,7 @@ const getPublicPublications = async (req, res) => {
     console.error('Error en getPublicPublications:', err);
     res.status(500).json({ error: 'Error al obtener publicaciones públicas' });
   } finally {
-    connection.release();
+    if (connection) connection.release();
   }
 };
 
@@ -111,9 +117,11 @@ const getPublicPublications = async (req, res) => {
 // ========================================
 
 const getPublicationById = async (req, res) => {
-  const connection = await pool.getConnection();
-  
+  let connection;
+
   try {
+    connection = await pool.getConnection();
+
     const { id } = req.params;
     const userId = req.user.id;
 
@@ -146,7 +154,7 @@ const getPublicationById = async (req, res) => {
     console.error('Error en getPublicationById:', err);
     res.status(500).json({ error: 'Error al obtener publicación' });
   } finally {
-    connection.release();
+    if (connection) connection.release();
   }
 };
 
@@ -155,9 +163,11 @@ const getPublicationById = async (req, res) => {
 // ========================================
 
 const updatePublication = async (req, res) => {
-  const connection = await pool.getConnection();
-  
+  let connection;
+
   try {
+    connection = await pool.getConnection();
+
     const { id } = req.params;
     const { nombre, descripcion } = req.body;
     const userId = req.user.id;
@@ -204,7 +214,7 @@ const updatePublication = async (req, res) => {
     console.error('Error en updatePublication:', err);
     res.status(500).json({ error: 'Error al actualizar publicación' });
   } finally {
-    connection.release();
+    if (connection) connection.release();
   }
 };
 
@@ -213,9 +223,11 @@ const updatePublication = async (req, res) => {
 // ========================================
 
 const deletePublication = async (req, res) => {
-  const connection = await pool.getConnection();
-  
+  let connection;
+
   try {
+    connection = await pool.getConnection();
+
     const { id } = req.params;
     const userId = req.user.id;
 
@@ -241,7 +253,7 @@ const deletePublication = async (req, res) => {
     console.error('Error en deletePublication:', err);
     res.status(500).json({ error: 'Error al eliminar publicación' });
   } finally {
-    connection.release();
+    if (connection) connection.release();
   }
 };
 
