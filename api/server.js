@@ -1,9 +1,9 @@
 /**
- * Punto de entrada para Vercel (función serverless)
- * Envuelve la app de Express existente con serverless-http.
+ * Punto de entrada para Vercel.
+ * Una app de Express ya es una función (req, res) => {...} válida,
+ * así que Vercel puede invocarla directamente, sin adaptadores.
  */
 
-const serverless = require('serverless-http');
 const app = require('../backend/app');
 
-module.exports = serverless(app);
+module.exports = app;
