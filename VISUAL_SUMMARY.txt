@@ -1,0 +1,238 @@
+```
+╔════════════════════════════════════════════════════════════════════╗
+║              🚀 SISTEMA NARTO-EV COMPLETADO                        ║
+║           MySQL + Node.js Backend + Frontend HTML/JS              ║
+╚════════════════════════════════════════════════════════════════════╝
+
+┌────────────────────────────────────────────────────────────────────┐
+│ 📍 UBICACIÓN ACTUAL                                                │
+└────────────────────────────────────────────────────────────────────┘
+
+c:\Users\franc\OneDrive\Escritorio\Proyectos\narto-ev\
+│
+├── 📄 index.html                    (Landing page)
+├── 📄 auth.html                     (Login/Registro)
+├── 📄 dashboard.html                (Panel admin)
+│
+├── 📁 backend/                      ✅ NUEVO - API REST
+│   ├── server.js                    (Punto de entrada)
+│   ├── package.json                 (Dependencias)
+│   ├── .env                         (Variables - NO subir)
+│   ├── .gitignore                   (Ya configurado)
+│   ├── config/
+│   │   ├── db.js                    (Conexión MySQL)
+│   │   └── init-db.js               (Crea tablas)
+│   ├── controllers/                 (Lógica del negocio)
+│   ├── routes/                      (Endpoints API)
+│   └── middleware/                  (Validaciones)
+│
+├── 📁 css/
+│   ├── style.css                    (Ya existe)
+│   ├── auth.css                     (Nuevo)
+│   └── dashboard.css                (Nuevo)
+│
+├── 📁 js/
+│   ├── main.js                      (Ya existe)
+│   ├── auth.js                      (Actualizado - conecta backend)
+│   └── dashboard.js                 (Actualizado - conecta backend)
+│
+├── 📁 assets/                       (Imágenes, SVG)
+│
+└── 📚 DOCUMENTACIÓN
+    ├── INICIO_RAPIDO.md             (Setup en 5 min)
+    ├── GUIA_COMPLETA.md             (Setup detallado)
+    ├── RESUMEN_BACKEND.md           (Overview técnico)
+    ├── PROXIMOS_PASOS.md            (Qué sigue)
+    └── README.md                    (Original proyecto)
+
+
+┌────────────────────────────────────────────────────────────────────┐
+│ 🏗️  ARQUITECTURA                                                   │
+└────────────────────────────────────────────────────────────────────┘
+
+NAVEGADOR (Puerto 3000)
+    │
+    ├─ index.html (Landing)
+    ├─ auth.html (Login/Registro)
+    │   └─ js/auth.js
+    │       └─ Conecta a Backend via fetch()
+    │
+    └─ dashboard.html (Panel Admin)
+        └─ js/dashboard.js
+            └─ Conecta a Backend via apiRequest()
+
+                    ↓ FETCH (http://localhost:5000)
+
+BACKEND - Express (Puerto 5000)
+    │
+    ├─ server.js (Inicia Express)
+    │
+    ├─ routes/auth.js
+    │   └─ POST /api/auth/signup
+    │   └─ POST /api/auth/login
+    │   └─ GET  /api/auth/verify
+    │
+    ├─ routes/users.js
+    │   └─ GET/PUT/DELETE /api/users/*
+    │
+    └─ routes/products.js
+        └─ POST/GET/PUT/DELETE /api/products/*
+
+                    ↓ SQL Queries
+
+BASE DE DATOS - MySQL
+    │
+    ├─ users (id, nombre, email, password, role)
+    ├─ products (id, user_id, nombre, tipo, precio)
+    ├─ images (id, product_id, url)
+    └─ videos (id, product_id, url)
+
+
+┌────────────────────────────────────────────────────────────────────┐
+│ 🔐 FLUJO DE AUTENTICACIÓN                                          │
+└────────────────────────────────────────────────────────────────────┘
+
+1. REGISTRO
+   ├─ Usuario llena formulario en auth.html
+   ├─ js/auth.js hace POST a /api/auth/signup
+   ├─ Backend hashea contraseña con bcrypt
+   ├─ Crea usuario en MySQL
+   └─ Retorna mensaje de éxito
+
+2. LOGIN
+   ├─ Usuario ingresa email + contraseña
+   ├─ js/auth.js hace POST a /api/auth/login
+   ├─ Backend verifica contraseña
+   ├─ Genera JWT token (válido 7 días)
+   ├─ Retorna token
+   ├─ Frontend guarda token en localStorage
+   └─ Redirige a dashboard.html
+
+3. ACCESO A DASHBOARD
+   ├─ dashboard.html se carga
+   ├─ js/dashboard.js verifica si hay token
+   ├─ Si no hay token → redirige a auth.html
+   ├─ Si hay token → carga usuario y dashboard
+   ├─ Todos los requests incluyen header: Authorization: Bearer <token>
+   └─ Backend verifica token en middleware/auth.js
+
+4. LOGOUT
+   ├─ Usuario hace clic en "Cerrar Sesión"
+   ├─ Frontend borra token de localStorage
+   └─ Redirige a index.html
+
+
+┌────────────────────────────────────────────────────────────────────┐
+│ ⚡ INSTALACIÓN RÁPIDA (3 pasos)                                    │
+└────────────────────────────────────────────────────────────────────┘
+
+PASO 1: Backend
+$ cd backend
+$ npm install
+$ npm run dev
+
+PASO 2: Frontend (OTRA TERMINAL)
+$ python -m http.server 3000
+
+PASO 3: Abrir navegador
+http://localhost:3000
+
+
+┌────────────────────────────────────────────────────────────────────┐
+│ 📡 API ENDPOINTS DISPONIBLES                                       │
+└────────────────────────────────────────────────────────────────────┘
+
+SIN AUTENTICACIÓN
+├─ POST   /api/auth/signup           Registrar usuario
+├─ POST   /api/auth/login            Iniciar sesión
+└─ GET    /api/auth/verify           Verificar token
+
+CON AUTENTICACIÓN (Header: Authorization: Bearer <token>)
+├─ GET    /api/users                 Listar usuarios (admin)
+├─ GET    /api/users/:id             Obtener usuario
+├─ PUT    /api/users/:id             Editar usuario
+├─ DELETE /api/users/:id             Eliminar usuario (admin)
+│
+├─ POST   /api/products              Crear producto
+├─ GET    /api/products              Mis productos
+├─ GET    /api/products/:id          Obtener producto
+├─ PUT    /api/products/:id          Editar producto
+└─ DELETE /api/products/:id          Eliminar producto
+
+
+┌────────────────────────────────────────────────────────────────────┐
+│ ✅ QUÉ ESTÁ LISTO                                                  │
+└────────────────────────────────────────────────────────────────────┘
+
+✅ Servidor Express funcionando
+✅ Conexión a MySQL automática
+✅ Tablas creadas automáticamente
+✅ API de registro (signup)
+✅ API de login
+✅ API de verificación de token
+✅ API de usuarios (CRUD)
+✅ API de productos (CRUD)
+✅ Middleware de autenticación
+✅ Hasheo de contraseñas con bcrypt
+✅ Tokens JWT con expiración
+✅ CORS configurado
+✅ Frontend conectado a backend
+✅ localStorage para guardar token
+✅ Dashboard protegido
+
+
+┌────────────────────────────────────────────────────────────────────┐
+│ 🚧 QUÉ FALTA (PRÓXIMAS TAREAS)                                     │
+└────────────────────────────────────────────────────────────────────┘
+
+🚧 Panel visual de usuarios
+🚧 Panel visual de productos  
+🚧 Subida de imágenes/videos
+🚧 Validaciones mejoradas
+🚧 Notificaciones visuales
+🚧 Publicación en producción
+
+
+┌────────────────────────────────────────────────────────────────────┐
+│ 📚 DOCUMENTACIÓN                                                   │
+└────────────────────────────────────────────────────────────────────┘
+
+📄 INICIO_RAPIDO.md
+   └─ Setup en 5 minutos (paso a paso)
+
+📄 GUIA_COMPLETA.md
+   └─ Instalación detallada + troubleshooting
+
+📄 RESUMEN_BACKEND.md
+   └─ Overview técnico del proyecto
+
+📄 PROXIMOS_PASOS.md
+   └─ Tareas pendientes y estimado de tiempo
+
+📄 backend/INSTALL.md
+   └─ Instalación específica del backend
+
+📄 backend/README.md
+   └─ Documentación de la API
+
+
+┌────────────────────────────────────────────────────────────────────┐
+│ 🎯 PRÓXIMAS ACCIONES                                               │
+└────────────────────────────────────────────────────────────────────┘
+
+1. Lee INICIO_RAPIDO.md (5 minutos)
+2. Sigue los pasos de instalación
+3. Prueba: Registra usuario y accede al dashboard
+4. Luego, elige qué tareas quieres hacer:
+   └─ Panel de usuarios (2-3h)
+   └─ Panel de productos (2-3h)
+   └─ Galería de medios (3-4h)
+   └─ Publicar en producción (2-3h)
+
+
+╔════════════════════════════════════════════════════════════════════╗
+║ 🚀 ¡LISTO PARA INSTALAR Y PROBAR!                                 ║
+║                                                                    ║
+║ Abre: INICIO_RAPIDO.md                                            ║
+╚════════════════════════════════════════════════════════════════════╝
+```

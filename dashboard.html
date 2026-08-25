@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="es-AR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard — NartoEV</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="icon" type="image/jpeg" href="assets/logo.jpg">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/dashboard.css">
+</head>
+<body>
+  <header class="site-header">
+    <div class="wrap header-inner">
+      <a href="index.html" class="logo">
+        <img class="logo-mark" src="assets/logo.jpg" alt="NartoEV">
+        Narto<span class="accent">EV</span>
+      </a>
+      <nav class="dashboard-nav">
+        <span id="user-email" class="user-info"></span>
+        <button id="logout-btn" class="btn btn-ghost">Cerrar Sesión</button>
+      </nav>
+    </div>
+  </header>
+
+  <main class="dashboard-container">
+    <aside class="sidebar">
+      <nav class="sidebar-nav">
+        <a href="#" class="nav-item active" data-section="overview">
+          <span class="nav-icon">📊</span> Resumen
+        </a>
+        <a href="#" class="nav-item" data-section="publications">
+          <span class="nav-icon">📦</span> Publicaciones
+        </a>
+        <a href="#" class="nav-item" data-section="users">
+          <span class="nav-icon">👥</span> Usuarios
+        </a>
+      </nav>
+    </aside>
+
+    <section class="main-content">
+      <!-- Sección: Resumen -->
+      <div id="overview" class="content-section active">
+        <div class="section-header">
+          <h1>Bienvenido al Dashboard</h1>
+          <p>Gestiona las publicaciones de trabajos realizados desde aquí</p>
+        </div>
+
+        <div class="dashboard-grid">
+          <div class="card">
+            <h3>Publicaciones</h3>
+            <p class="card-stat" id="publication-count">0</p>
+            <p class="card-desc">Publicaciones activas</p>
+          </div>
+
+          <div class="card">
+            <h3>Clientes</h3>
+            <p class="card-stat" id="client-count">0</p>
+            <p class="card-desc">Usuarios registrados</p>
+          </div>
+
+          <div class="card">
+            <h3>Visitantes mensuales</h3>
+            <p class="card-stat" id="visitor-count">—</p>
+            <p class="card-desc">Métrica próximamente</p>
+          </div>
+        </div>
+
+        <div class="quick-actions">
+          <h2>Acciones Rápidas</h2>
+          <div class="actions-grid">
+            <button class="action-btn" data-section="publications">
+              <span class="action-icon">＋</span>
+              Añadir Publicación
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sección: Publicaciones -->
+      <div id="publications" class="content-section">
+        <div class="section-header">
+          <h1>Gestión de Publicaciones</h1>
+          <button class="btn btn-accent" id="add-publication-btn">Añadir Publicación</button>
+        </div>
+        <div class="publication-toolbar">
+          <p>Organiza las publicaciones que aparecerán en el sitio público.</p>
+        </div>
+        <form id="publication-form" class="admin-form" hidden>
+          <input type="hidden" id="publication-id">
+          <label>Título de la publicación<input id="publication-name" required maxlength="100"></label>
+          <label class="form-wide">Características y descripción<textarea id="publication-description" rows="4"></textarea></label>
+          <div class="file-dropzone form-wide" data-file-dropzone="publication-media-dropzone">
+            <input id="publication-media" type="file" accept="image/*,video/*" multiple hidden>
+            <span class="dropzone-icon">＋</span>
+            <strong>Agregar imágenes y/o videos</strong>
+            <span>Arrastra los archivos aquí o haz clic para seleccionarlos</span>
+            <div id="publication-media-preview" class="media-preview"></div>
+          </div>
+          <div class="form-actions form-wide">
+            <button type="submit" class="btn btn-accent">Guardar publicación</button>
+            <button type="button" class="btn btn-ghost" id="cancel-publication-btn">Cancelar</button>
+          </div>
+          <p id="publication-form-message" class="form-message form-wide"></p>
+        </form>
+        <div id="publications-grid" class="publications-grid">
+          <div class="empty-state">Todavía no hay publicaciones.</div>
+        </div>
+      </div>
+
+      <!-- Sección: Usuarios -->
+      <div id="users" class="content-section">
+        <div class="section-header">
+          <h1>Usuarios</h1>
+          <p>Administra cuentas y permisos de acceso.</p>
+        </div>
+        <div class="users-panel">
+          <div class="table-scroll">
+            <table class="users-table">
+              <thead>
+                <tr><th>ID</th><th>Nombre</th><th>Email</th><th>Contraseña</th><th>Rol</th><th>Acciones</th></tr>
+              </thead>
+              <tbody id="users-table-body">
+                <tr><td colspan="6" class="empty-state">Cargando usuarios...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+    </section>
+  </main>
+
+  <script src="js/dashboard.js"></script>
+</body>
+</html>

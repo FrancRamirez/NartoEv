@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="es-AR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Iniciar Sesión — NartoEV</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="icon" type="image/jpeg" href="assets/logo.jpg">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/auth.css">
+</head>
+<body>
+  <header class="site-header">
+    <div class="wrap header-inner">
+      <a href="index.html" class="logo">
+        <img class="logo-mark" src="assets/logo.jpg" alt="NartoEV">
+        Narto<span class="accent">EV</span>
+      </a>
+    </div>
+  </header>
+
+  <main class="auth-container">
+    <div class="auth-wrapper">
+      <!-- Formulario de Login -->
+      <div class="auth-form-container" id="login-container">
+        <h1>Iniciar Sesión</h1>
+        
+        <form id="login-form" class="auth-form">
+          <div class="form-group">
+            <label for="login-email">Email</label>
+            <input type="email" id="login-email" name="email" placeholder="Email" required>
+          </div>
+          
+          <div class="form-group">
+            <label for="login-password">Contraseña</label>
+            <input type="password" id="login-password" name="password" placeholder="••••••••" required>
+          </div>
+
+          <button type="submit" class="btn btn-accent btn-full">Iniciar Sesión</button>
+        </form>
+
+        <p class="auth-toggle">
+          ¿No tienes cuenta? 
+          <button type="button" class="toggle-btn" data-form="signup">Regístrate aquí</button>
+        </p>
+
+        <div id="login-error" class="auth-error" style="display: none;"></div>
+      </div>
+
+      <!-- Formulario de Registro -->
+      <div class="auth-form-container" id="signup-container" style="display: none;">
+        <h1>Crear Cuenta</h1>
+        
+        <form id="signup-form" class="auth-form">
+          <div class="form-group">
+            <label for="signup-name">Nombre Completo</label>
+            <input type="text" id="signup-name" name="name" placeholder="Nombre completo" required>
+          </div>
+
+          <div class="form-group">
+            <label for="signup-email">Email</label>
+            <input type="email" id="signup-email" name="email" placeholder="Gmail" required>
+          </div>
+          
+          <div class="form-group">
+            <label for="signup-password">Contraseña</label>
+            <input type="password" id="signup-password" name="password" placeholder="Mínimo 8 caracteres" required minlength="8">
+          </div>
+
+          <div class="form-group">
+            <label for="signup-password-confirm">Confirmar Contraseña</label>
+            <input type="password" id="signup-password-confirm" name="password_confirm" placeholder="Mínimo 8 caracteres" required minlength="8">
+          </div>
+
+          <button type="submit" class="btn btn-accent btn-full">Registrarse</button>
+        </form>
+
+        <p class="auth-toggle">
+          ¿Ya tienes cuenta? 
+          <button type="button" class="toggle-btn" data-form="login">Inicia sesión</button>
+        </p>
+
+        <div id="signup-error" class="auth-error" style="display: none;"></div>
+      </div>
+
+      <!-- Loading indicator -->
+      <div id="loading-indicator" class="loading" style="display: none;">
+        <div class="spinner"></div>
+      </div>
+    </div>
+  </main>
+
+  <script src="js/auth.js"></script>
+</body>
+</html>
