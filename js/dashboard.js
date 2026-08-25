@@ -1,9 +1,9 @@
 /**
  * Lógica del Dashboard
- * Conectado a backend en http://localhost:5000
+ * Usa ruta relativa /api, funciona igual en local y en producción.
  */
 
-const API_URL = 'http://localhost:5000/api';
+const API_URL = '/api';
 
 // Obtener token de localStorage
 function getToken() {
@@ -210,7 +210,7 @@ function renderFilePreview(previewId, files) {
 
 function getMediaUrl(url) {
   if (!url) return '';
-  return url.startsWith('http') ? url : `http://localhost:5000${url}`;
+  return url;
 }
 
 function renderMediaGallery(media = [], label) {

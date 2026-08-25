@@ -31,7 +31,7 @@ observeReveal(document.querySelectorAll(".reveal"));
 
 const publicPublicationsGrid = document.getElementById('public-publications-grid');
 if (publicPublicationsGrid) {
-  const publicPublicationsUrl = 'http://localhost:5000/api/publications/public';
+  const publicPublicationsUrl = '/api/publications/public';
   const catalogArrowLeft = document.getElementById('catalog-arrow-left');
   const catalogArrowRight = document.getElementById('catalog-arrow-right');
   const publicationsPerPage = 15;
@@ -42,7 +42,7 @@ if (publicPublicationsGrid) {
     '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;'
   }[character]));
 
-  const mediaUrl = url => url?.startsWith('http') ? url : `http://localhost:5000${url}`;
+  const mediaUrl = url => url ?? '';
 
   fetch(publicPublicationsUrl)
     .then(response => {

@@ -17,21 +17,8 @@ const pool = mysql.createPool({
   },
   waitForConnections: true,
   connectionLimit: 10,
-  queueLimit: 0
+  queueLimit: 0,
+  connectTimeout: 10000
 });
-
-// Probar conexión
-pool.getConnection()
-  .then(connection => {
-    console.log('✓ Conexión a MySQL exitosa');
-    connection.release();
-  })
-  .catch(err => {
-    console.error('✗ Error al conectar a MySQL:', err.message);
-    console.error('Asegúrate de que:');
-    console.error('  1. MySQL está corriendo');
-    console.error('  2. Los datos en .env son correctos');
-    console.error('  3. La base de datos existe');
-  });
 
 module.exports = pool;
