@@ -79,9 +79,9 @@ observeReveal(document.querySelectorAll(".reveal"));
 const publicPublicationsGrid = document.getElementById('public-publications-grid');
 if (publicPublicationsGrid) {
   const publicPublicationsUrl = '/api/publications/public';
-  const catalogArrowLeft = document.getElementById('catalog-arrow-left');
-  const catalogArrowRight = document.getElementById('catalog-arrow-right');
-  let publicPublications = [];
+  const publicVideosGrid = document.getElementById('public-videos-grid');
+  const publicVideosSlider = document.getElementById('public-videos-slider');
+  const publicVideosTitle = document.getElementById('public-videos-title');
 
   const escapeHtml = value => String(value ?? '').replace(/[&<>'"]/g, character => ({
     '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;'
@@ -95,34 +95,66 @@ if (publicPublicationsGrid) {
       return response.json();
     })
     .then(({ publications }) => {
-      publicPublications = publications || [];
-      if (!publicPublications.length) {
+      const mediaByType = groupPublicationMedia(publications || []);
+      if (!mediaByType.imagen.length && !mediaByType.video.length) {
         publicPublicationsGrid.innerHTML = '<p class="catalog-status">Próximamente encontrarás nuestras publicaciones aquí.</p>';
         return;
       }
 
-      renderPublications();
-      startAutoScroll();
+      createMediaCarousel({
+        grid: publicPublicationsGrid,
+        leftArrow: document.getElementById('catalog-arrow-left'),
+        rightArrow: document.getElementById('catalog-arrow-right'),
+        items: mediaByType.imagen,
+        type: 'imagen',
+        emptyMessage: 'Próximamente encontrarás imágenes de nuestros trabajos aquí.'
+      });
+
+      if (mediaByType.video.length) {
+        publicVideosTitle.hidden = false;
+        publicVideosSlider.hidden = false;
+        createMediaCarousel({
+          grid: publicVideosGrid,
+          leftArrow: document.getElementById('video-catalog-arrow-left'),
+          rightArrow: document.getElementById('video-catalog-arrow-right'),
+          items: mediaByType.video,
+          type: 'video',
+          emptyMessage: 'Próximamente encontrarás videos de nuestros trabajos aquí.'
+        });
+      }
     })
     .catch(() => {
       publicPublicationsGrid.innerHTML = '<p class="catalog-status">No se pudieron cargar las publicaciones.</p>';
+      publicVideosGrid.innerHTML = '<p class="catalog-status">No se pudieron cargar los videos.</p>';
     });
 
-  function renderPublications() {
-    publicPublicationsGrid.innerHTML = publicPublications.map(publication => {
-      const cover = publication.media?.find(item => item.tipo === 'imagen') || publication.media?.[0];
-      const coverUrl = cover ? mediaUrl(cover.url) : '';
-      const coverMarkup = cover
-        ? cover.tipo === 'video'
-          ? `<video controls preload="metadata" aria-label="Video de ${escapeHtml(publication.nombre)}"><source src="${escapeHtml(coverUrl)}"></video>`
-          : `<img src="${escapeHtml(coverUrl)}" alt="${escapeHtml(cover.titulo || publication.nombre)}" loading="lazy">`
-        : '<span class="media-placeholder">Sin imagen</span>';
+  function groupPublicationMedia(publications) {
+    return publications.reduce((groups, publication) => {
+      (publication.media || []).forEach(media => {
+        if (media.tipo === 'imagen' || media.tipo === 'video') {
+          groups[media.tipo].push({ publication, media });
+        }
+      });
+      return groups;
+    }, { imagen: [], video: [] });
+  }
+
+  function createMediaCarousel({ grid, leftArrow, rightArrow, items, type, emptyMessage }) {
+    if (!items.length) {
+      grid.innerHTML = `<p class="catalog-status">${emptyMessage}</p>`;
+      return;
+    }
+
+    grid.innerHTML = items.map(({ publication, media }) => {
+      const url = mediaUrl(media.url);
+      const mediaMarkup = type === 'video'
+        ? `<video controls preload="metadata" aria-label="Video de ${escapeHtml(publication.nombre)}"><source src="${escapeHtml(url)}"></video>`
+        : `<img src="${escapeHtml(url)}" alt="${escapeHtml(media.titulo || publication.nombre)}" loading="lazy">`;
 
       return `
         <article class="public-publication-card reveal" data-publication-name="${escapeHtml(publication.nombre)}" data-publication-description="${escapeHtml(publication.descripcion || 'Consultá por características y disponibilidad.')}">
           <div class="public-publication-media" data-image-area>
-            ${coverMarkup}
-            ${publication.media?.length > 1 ? `<span class="media-count">${publication.media.length} elementos</span>` : ''}
+            ${mediaMarkup}
           </div>
           <div class="public-publication-content" data-details-area tabindex="0" role="button" aria-label="Ver detalle de ${escapeHtml(publication.nombre)}">
             <h3>${escapeHtml(publication.nombre)}</h3>
@@ -132,7 +164,7 @@ if (publicPublicationsGrid) {
       `;
     }).join('');
 
-    publicPublicationsGrid.querySelectorAll('.public-publication-media img').forEach(image => {
+    grid.querySelectorAll('.public-publication-media img').forEach(image => {
       image.addEventListener('click', event => {
         event.stopPropagation();
         stopAutoScroll();
@@ -140,7 +172,7 @@ if (publicPublicationsGrid) {
       });
     });
 
-    publicPublicationsGrid.querySelectorAll('[data-details-area]').forEach(details => {
+    grid.querySelectorAll('[data-details-area]').forEach(details => {
       const openDetails = () => {
         stopAutoScroll();
         const card = details.closest('.public-publication-card');
@@ -155,75 +187,45 @@ if (publicPublicationsGrid) {
       });
     });
 
-    observeReveal(publicPublicationsGrid.querySelectorAll('.reveal'));
-    updateArrowVisibility();
-  }
+    observeReveal(grid.querySelectorAll('.reveal'));
 
-  function updateArrowVisibility() {
-    const maxScroll = publicPublicationsGrid.scrollWidth - publicPublicationsGrid.clientWidth;
-    catalogArrowLeft.hidden = publicPublicationsGrid.scrollLeft <= 4;
-    catalogArrowRight.hidden = publicPublicationsGrid.scrollLeft >= maxScroll - 4;
-  }
-
-  // ======================================================================
-  // Carrusel automático: se desliza solo hacia la derecha. Apenas el
-  // usuario interactúa de cualquier forma (toca una imagen, la
-  // descripción, una flecha, o arrastra/scrollea con el mouse/dedo),
-  // se cancela para siempre y el control pasa a ser 100% manual.
-  // ======================================================================
-  let autoScrollActive = true;
-  let autoScrollFrame = null;
-  const AUTO_SCROLL_SPEED = 0.6; // píxeles por frame (~36px/seg)
-
-  function stepAutoScroll() {
-    if (!autoScrollActive) return;
-
-    const maxScroll = publicPublicationsGrid.scrollWidth - publicPublicationsGrid.clientWidth;
-
-    if (maxScroll <= 0) {
-      autoScrollFrame = requestAnimationFrame(stepAutoScroll);
-      return;
-    }
-
-    if (publicPublicationsGrid.scrollLeft >= maxScroll) {
-      publicPublicationsGrid.scrollLeft = 0;
-    } else {
-      publicPublicationsGrid.scrollLeft += AUTO_SCROLL_SPEED;
-    }
-
-    updateArrowVisibility();
-    autoScrollFrame = requestAnimationFrame(stepAutoScroll);
-  }
-
-  function startAutoScroll() {
-    if (autoScrollFrame) return;
-    autoScrollFrame = requestAnimationFrame(stepAutoScroll);
-  }
-
-  function stopAutoScroll() {
-    autoScrollActive = false;
-    if (autoScrollFrame) {
-      cancelAnimationFrame(autoScrollFrame);
+    let autoScrollActive = true;
+    let autoScrollFrame = null;
+    const updateArrowVisibility = () => {
+      const maxScroll = grid.scrollWidth - grid.clientWidth;
+      leftArrow.hidden = grid.scrollLeft <= 4;
+      rightArrow.hidden = grid.scrollLeft >= maxScroll - 4;
+    };
+    const stopAutoScroll = () => {
+      autoScrollActive = false;
+      if (autoScrollFrame) cancelAnimationFrame(autoScrollFrame);
       autoScrollFrame = null;
-    }
+    };
+    const stepAutoScroll = () => {
+      if (!autoScrollActive) return;
+      const maxScroll = grid.scrollWidth - grid.clientWidth;
+      if (maxScroll > 0) grid.scrollLeft = grid.scrollLeft >= maxScroll ? 0 : grid.scrollLeft + 0.6;
+      updateArrowVisibility();
+      autoScrollFrame = requestAnimationFrame(stepAutoScroll);
+    };
+
+    ['wheel', 'touchstart', 'pointerdown'].forEach(eventName => {
+      grid.addEventListener(eventName, stopAutoScroll, { passive: true });
+    });
+    leftArrow.addEventListener('click', () => {
+      stopAutoScroll();
+      grid.scrollBy({ left: -520, behavior: 'smooth' });
+      setTimeout(updateArrowVisibility, 350);
+    });
+    rightArrow.addEventListener('click', () => {
+      stopAutoScroll();
+      grid.scrollBy({ left: 520, behavior: 'smooth' });
+      setTimeout(updateArrowVisibility, 350);
+    });
+
+    updateArrowVisibility();
+    autoScrollFrame = requestAnimationFrame(stepAutoScroll);
   }
-
-  // Cualquier interacción manual directa sobre el carrusel lo detiene:
-  ['wheel', 'touchstart', 'pointerdown'].forEach(eventName => {
-    publicPublicationsGrid.addEventListener(eventName, stopAutoScroll, { passive: true });
-  });
-
-  catalogArrowLeft.addEventListener('click', () => {
-    stopAutoScroll();
-    publicPublicationsGrid.scrollBy({ left: -520, behavior: 'smooth' });
-    setTimeout(updateArrowVisibility, 350);
-  });
-
-  catalogArrowRight.addEventListener('click', () => {
-    stopAutoScroll();
-    publicPublicationsGrid.scrollBy({ left: 520, behavior: 'smooth' });
-    setTimeout(updateArrowVisibility, 350);
-  });
 
 
   const imageModal = document.getElementById('catalog-image-modal');
