@@ -85,6 +85,8 @@ const login = async (req, res) => {
       [email]
     );
 
+    console.log('[DEBUG login] email recibido:', JSON.stringify(email), '| usuarios encontrados:', users.length);
+
     if (users.length === 0) {
       return res.status(401).json({ error: 'Credenciales inválidas' });
     }
@@ -93,6 +95,8 @@ const login = async (req, res) => {
 
     // Verificar contraseña
     const passwordMatch = await bcrypt.compare(password, user.password);
+
+    console.log('[DEBUG login] hash en DB:', JSON.stringify(user.password), '| passwordMatch:', passwordMatch);
 
     if (!passwordMatch) {
       return res.status(401).json({ error: 'Credenciales inválidas' });
