@@ -85,6 +85,8 @@ const login = async (req, res) => {
       [email]
     );
 
+    console.log('[DEBUG login] email recibido:', JSON.stringify(email), '| usuarios encontrados:', users.length);
+
     if (users.length === 0) {
       return res.status(401).json({ error: 'Credenciales inválidas' });
     }
@@ -93,6 +95,8 @@ const login = async (req, res) => {
 
     // Verificar contraseña
     const passwordMatch = await bcrypt.compare(password, user.password);
+
+    console.log('[DEBUG login] hash en DB:', JSON.stringify(user.password), '| passwordMatch:', passwordMatch);
 
     if (!passwordMatch) {
       return res.status(401).json({ error: 'Credenciales inválidas' });
@@ -149,9 +153,20 @@ const verify = async (req, res) => {
       return res.status(401).json({ error: 'Usuario no encontrado' });
     }
 
+    const user = users[0];
+
+    // Renovamos el token en cada verificación exitosa: así la sesión
+    // dura 7 días desde la ÚLTIMA vez que se usó, no desde el login.
+    const refreshedToken = jwt.sign(
+      { id: user.id, email: user.email, nombre: user.nombre, role: user.role },
+      process.env.JWT_SECRET,
+      { expiresIn: '7d' }
+    );
+
     res.json({
       message: 'Token válido',
-      user: users[0]
+      token: refreshedToken,
+      user
     });
   } catch (err) {
     res.status(401).json({ error: 'Token inválido o expirado' });

@@ -2,6 +2,53 @@
 const yearEl = document.getElementById("year");
 if (yearEl) yearEl.textContent = new Date().getFullYear();
 
+// ======================================================================
+// Sesión + conteo de visitas mensuales
+// - Si ya hay un token válido guardado, el ícono de login lleva directo
+//   al dashboard (y la verificación renueva el token: ventana deslizante
+//   de 7 días desde el último uso, no desde el login).
+// - Cualquier visitante que NO sea admin (esté logueado o no) suma 1
+//   visita al contador del mes en curso, una sola vez por pestaña abierta.
+// ======================================================================
+(function checkSessionAndTrackVisit() {
+  const loginIcon = document.querySelector('.btn-login');
+  const token = localStorage.getItem('authToken');
+
+  function trackVisitOnce() {
+    if (sessionStorage.getItem('visitTracked')) return;
+    sessionStorage.setItem('visitTracked', 'true');
+    fetch('/api/visits/track', { method: 'POST' }).catch(() => {});
+  }
+
+  if (!token) {
+    trackVisitOnce();
+    return;
+  }
+
+  fetch('/api/auth/verify', {
+    headers: { 'Authorization': `Bearer ${token}` }
+  })
+    .then(response => response.ok ? response.json() : Promise.reject())
+    .then(data => {
+      if (data.token) {
+        localStorage.setItem('authToken', data.token);
+      }
+      if (loginIcon) {
+        loginIcon.href = 'dashboard.html';
+        loginIcon.title = 'Ir al panel';
+        loginIcon.setAttribute('aria-label', 'Ir al panel de administración');
+      }
+      if (data.user?.role !== 'admin') {
+        trackVisitOnce();
+      }
+    })
+    .catch(() => {
+      // Token inválido o vencido: lo limpiamos, el ícono sigue yendo a auth.html
+      localStorage.removeItem('authToken');
+      trackVisitOnce();
+    });
+})();
+
 // Elementos "reveal": aparecen animados a medida que entran en pantalla
 const revealObserver = "IntersectionObserver" in window
   ? new IntersectionObserver((entries) => {

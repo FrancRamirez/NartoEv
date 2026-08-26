@@ -12,6 +12,7 @@ require('dotenv').config();
 const authRoutes = require('./routes/auth');
 const usersRoutes = require('./routes/users');
 const publicationsRoutes = require('./routes/publications');
+const visitsRoutes = require('./routes/visits');
 
 // Crear aplicación Express
 const app = express();
@@ -54,6 +55,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use('/api/auth', authRoutes);
 app.use('/api/users', usersRoutes);
 app.use('/api/publications', publicationsRoutes);
+app.use('/api/visits', visitsRoutes);
 
 // Ruta de prueba
 app.get('/api/health', (req, res) => {

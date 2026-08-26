@@ -5,6 +5,11 @@
 
 const API_URL = '/api';
 
+// Guardar token en localStorage
+function setToken(token) {
+  localStorage.setItem('authToken', token);
+}
+
 // Obtener token de localStorage
 function getToken() {
   return localStorage.getItem('authToken');
@@ -65,6 +70,12 @@ async function initDashboard() {
     const authData = await apiRequest('/auth/verify');
     const user = authData.user;
 
+    // La sesión dura 7 días desde el último uso: guardamos el token
+    // renovado que nos devuelve el servidor en cada verificación.
+    if (authData.token) {
+      setToken(authData.token);
+    }
+
     if (user.role !== 'admin') {
       clearToken();
       alert('Tu cuenta no tiene permisos para acceder al panel de administración.');
@@ -78,7 +89,7 @@ async function initDashboard() {
     const userEmailEl = document.getElementById('user-email');
     userEmailEl.textContent = user.email;
 
-    await Promise.all([loadPublications(), loadUsers()]);
+    await Promise.all([loadPublications(), loadUsers(), loadMonthlyVisits()]);
 
     console.log('✓ Dashboard cargado para:', user.email);
   } catch (err) {
@@ -245,6 +256,20 @@ async function loadUsers() {
     attachUserRowListeners(users);
   } catch (error) {
     usersBody.innerHTML = '<tr><td colspan="6" class="empty-state">No se pudieron cargar los usuarios.</td></tr>';
+  }
+}
+
+async function loadMonthlyVisits() {
+  const visitorCount = document.getElementById('visitor-count');
+  const visitorDesc = visitorCount?.parentElement.querySelector('.card-desc');
+
+  try {
+    const data = await apiRequest('/visits/monthly');
+    visitorCount.textContent = data.count;
+    if (visitorDesc) visitorDesc.textContent = 'Este mes';
+  } catch (error) {
+    visitorCount.textContent = '—';
+    if (visitorDesc) visitorDesc.textContent = 'No se pudo cargar';
   }
 }
 
