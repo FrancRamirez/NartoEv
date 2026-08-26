@@ -3,6 +3,7 @@
  */
 
 const pool = require('../config/db');
+const cloudinary = require('../config/cloudinary');
 
 // ========================================
 // Crear publicación
@@ -257,18 +258,32 @@ const deletePublication = async (req, res) => {
   }
 };
 
+function uploadBufferToCloudinary(buffer, resourceType) {
+  return new Promise((resolve, reject) => {
+    const stream = cloudinary.uploader.upload_stream(
+      { resource_type: resourceType, folder: 'narto-ev' },
+      (error, result) => {
+        if (error) return reject(error);
+        resolve(result);
+      }
+    );
+    stream.end(buffer);
+  });
+}
+
 async function savePublicationMedia(connection, publicationId, files = []) {
   for (const [index, file] of files.entries()) {
-    const url = `/uploads/${file.filename}`;
     if (file.mimetype.startsWith('image/')) {
+      const result = await uploadBufferToCloudinary(file.buffer, 'image');
       await connection.query(
         'INSERT INTO images (product_id, url, alt_text, orden) VALUES (?, ?, ?, ?)',
-        [publicationId, url, file.originalname, index]
+        [publicationId, result.secure_url, file.originalname, index]
       );
     } else if (file.mimetype.startsWith('video/')) {
+      const result = await uploadBufferToCloudinary(file.buffer, 'video');
       await connection.query(
         'INSERT INTO videos (product_id, url, titulo, tipo) VALUES (?, ?, ?, ?)',
-        [publicationId, url, file.originalname, 'archivo']
+        [publicationId, result.secure_url, file.originalname, 'archivo']
       );
     }
   }

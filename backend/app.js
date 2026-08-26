@@ -44,7 +44,8 @@ app.use(cors({
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
-app.use('/uploads', express.static(require('path').join(__dirname, 'uploads')));
+// Nota: ya no servimos /uploads como carpeta estática — los archivos
+// ahora se guardan en Cloudinary y se acceden por su URL pública directa.
 
 // ========================================
 // Rutas
