@@ -1,6 +1,7 @@
 // Año dinámico en el footer
 const yearEl = document.getElementById("year");
 if (yearEl) yearEl.textContent = new Date().getFullYear();
+const API_URL = window.NARTO_API_URL || '/api';
 
 // ======================================================================
 // Sesión + conteo de visitas mensuales
@@ -17,7 +18,7 @@ if (yearEl) yearEl.textContent = new Date().getFullYear();
   function trackVisitOnce() {
     if (sessionStorage.getItem('visitTracked')) return;
     sessionStorage.setItem('visitTracked', 'true');
-    fetch('/api/visits/track', { method: 'POST' }).catch(() => {});
+    fetch(`${API_URL}/visits/track`, { method: 'POST' }).catch(() => {});
   }
 
   if (!token) {
@@ -25,7 +26,7 @@ if (yearEl) yearEl.textContent = new Date().getFullYear();
     return;
   }
 
-  fetch('/api/auth/verify', {
+  fetch(`${API_URL}/auth/verify`, {
     headers: { 'Authorization': `Bearer ${token}` }
   })
     .then(response => response.ok ? response.json() : Promise.reject())
@@ -78,7 +79,7 @@ observeReveal(document.querySelectorAll(".reveal"));
 
 const publicPublicationsGrid = document.getElementById('public-publications-grid');
 if (publicPublicationsGrid) {
-  const publicPublicationsUrl = '/api/publications/public';
+  const publicPublicationsUrl = `${API_URL}/publications/public`;
   const publicVideosGrid = document.getElementById('public-videos-grid');
   const publicVideosSlider = document.getElementById('public-videos-slider');
   const publicVideosTitle = document.getElementById('public-videos-title');

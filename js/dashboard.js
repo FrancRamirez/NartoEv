@@ -1,9 +1,9 @@
 /**
  * Lógica del Dashboard
- * Usa ruta relativa /api, funciona igual en local y en producción.
+ * Usa la configuración compartida de API para funcionar en local y producción.
  */
 
-const API_URL = '/api';
+const API_URL = window.NARTO_API_URL || '/api';
 
 // Guardar token en localStorage
 function setToken(token) {

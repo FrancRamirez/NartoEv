@@ -1,9 +1,9 @@
 /**
  * Lógica de Autenticación - Login/Registro
- * Usa ruta relativa /api, funciona igual en local y en producción.
+ * Usa la configuración compartida de API para funcionar en local y producción.
  */
 
-const API_URL = '/api';
+const API_URL = window.NARTO_API_URL || '/api';
 
 // Elementos del DOM
 const loginContainer = document.getElementById('login-container');
