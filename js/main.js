@@ -81,9 +81,7 @@ if (publicPublicationsGrid) {
   const publicPublicationsUrl = '/api/publications/public';
   const catalogArrowLeft = document.getElementById('catalog-arrow-left');
   const catalogArrowRight = document.getElementById('catalog-arrow-right');
-  const publicationsPerPage = 15;
   let publicPublications = [];
-  let currentPublicationPage = 0;
 
   const escapeHtml = value => String(value ?? '').replace(/[&<>'"]/g, character => ({
     '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;'
@@ -103,17 +101,15 @@ if (publicPublicationsGrid) {
         return;
       }
 
-      renderPublicationPage();
+      renderPublications();
+      startAutoScroll();
     })
     .catch(() => {
       publicPublicationsGrid.innerHTML = '<p class="catalog-status">No se pudieron cargar las publicaciones.</p>';
     });
 
-  function renderPublicationPage() {
-    const start = currentPublicationPage * publicationsPerPage;
-    const pagePublications = publicPublications.slice(start, start + publicationsPerPage);
-
-    publicPublicationsGrid.innerHTML = pagePublications.map(publication => {
+  function renderPublications() {
+    publicPublicationsGrid.innerHTML = publicPublications.map(publication => {
       const cover = publication.media?.find(item => item.tipo === 'imagen') || publication.media?.[0];
       const coverUrl = cover ? mediaUrl(cover.url) : '';
       const coverMarkup = cover
@@ -139,12 +135,14 @@ if (publicPublicationsGrid) {
     publicPublicationsGrid.querySelectorAll('.public-publication-media img').forEach(image => {
       image.addEventListener('click', event => {
         event.stopPropagation();
+        stopAutoScroll();
         openImageModal(image.src, image.alt);
       });
     });
 
     publicPublicationsGrid.querySelectorAll('[data-details-area]').forEach(details => {
       const openDetails = () => {
+        stopAutoScroll();
         const card = details.closest('.public-publication-card');
         openDetailsModal(card.dataset.publicationName, card.dataset.publicationDescription);
       };
@@ -157,26 +155,76 @@ if (publicPublicationsGrid) {
       });
     });
 
-    const lastPage = Math.ceil(publicPublications.length / publicationsPerPage) - 1;
-    catalogArrowLeft.hidden = currentPublicationPage === 0;
-    catalogArrowRight.hidden = currentPublicationPage >= lastPage;
-
     observeReveal(publicPublicationsGrid.querySelectorAll('.reveal'));
+    updateArrowVisibility();
   }
 
-  catalogArrowLeft.addEventListener('click', () => {
-    if (currentPublicationPage > 0) {
-      currentPublicationPage -= 1;
-      renderPublicationPage();
+  function updateArrowVisibility() {
+    const maxScroll = publicPublicationsGrid.scrollWidth - publicPublicationsGrid.clientWidth;
+    catalogArrowLeft.hidden = publicPublicationsGrid.scrollLeft <= 4;
+    catalogArrowRight.hidden = publicPublicationsGrid.scrollLeft >= maxScroll - 4;
+  }
+
+  // ======================================================================
+  // Carrusel automático: se desliza solo hacia la derecha. Apenas el
+  // usuario interactúa de cualquier forma (toca una imagen, la
+  // descripción, una flecha, o arrastra/scrollea con el mouse/dedo),
+  // se cancela para siempre y el control pasa a ser 100% manual.
+  // ======================================================================
+  let autoScrollActive = true;
+  let autoScrollFrame = null;
+  const AUTO_SCROLL_SPEED = 0.6; // píxeles por frame (~36px/seg)
+
+  function stepAutoScroll() {
+    if (!autoScrollActive) return;
+
+    const maxScroll = publicPublicationsGrid.scrollWidth - publicPublicationsGrid.clientWidth;
+
+    if (maxScroll <= 0) {
+      autoScrollFrame = requestAnimationFrame(stepAutoScroll);
+      return;
     }
+
+    if (publicPublicationsGrid.scrollLeft >= maxScroll) {
+      publicPublicationsGrid.scrollLeft = 0;
+    } else {
+      publicPublicationsGrid.scrollLeft += AUTO_SCROLL_SPEED;
+    }
+
+    updateArrowVisibility();
+    autoScrollFrame = requestAnimationFrame(stepAutoScroll);
+  }
+
+  function startAutoScroll() {
+    if (autoScrollFrame) return;
+    autoScrollFrame = requestAnimationFrame(stepAutoScroll);
+  }
+
+  function stopAutoScroll() {
+    autoScrollActive = false;
+    if (autoScrollFrame) {
+      cancelAnimationFrame(autoScrollFrame);
+      autoScrollFrame = null;
+    }
+  }
+
+  // Cualquier interacción manual directa sobre el carrusel lo detiene:
+  ['wheel', 'touchstart', 'pointerdown'].forEach(eventName => {
+    publicPublicationsGrid.addEventListener(eventName, stopAutoScroll, { passive: true });
+  });
+
+  catalogArrowLeft.addEventListener('click', () => {
+    stopAutoScroll();
+    publicPublicationsGrid.scrollBy({ left: -520, behavior: 'smooth' });
+    setTimeout(updateArrowVisibility, 350);
   });
 
   catalogArrowRight.addEventListener('click', () => {
-    if ((currentPublicationPage + 1) * publicationsPerPage < publicPublications.length) {
-      currentPublicationPage += 1;
-      renderPublicationPage();
-    }
+    stopAutoScroll();
+    publicPublicationsGrid.scrollBy({ left: 520, behavior: 'smooth' });
+    setTimeout(updateArrowVisibility, 350);
   });
+
 
   const imageModal = document.getElementById('catalog-image-modal');
   const detailsModal = document.getElementById('catalog-details-modal');
