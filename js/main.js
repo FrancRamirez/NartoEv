@@ -174,16 +174,15 @@ if (publicPublicationsGrid) {
     });
 
     grid.querySelectorAll('[data-details-area]').forEach(details => {
-      const openDetails = () => {
+      const goToContact = () => {
         stopAutoScroll();
-        const card = details.closest('.public-publication-card');
-        openDetailsModal(card.dataset.publicationName, card.dataset.publicationDescription);
+        document.getElementById('contacto')?.scrollIntoView({ behavior: 'smooth' });
       };
-      details.addEventListener('click', openDetails);
+      details.addEventListener('click', goToContact);
       details.addEventListener('keydown', event => {
         if (event.key === 'Enter' || event.key === ' ') {
           event.preventDefault();
-          openDetails();
+          goToContact();
         }
       });
     });
@@ -192,15 +191,26 @@ if (publicPublicationsGrid) {
 
     let autoScrollActive = true;
     let autoScrollFrame = null;
+    let resumeTimeout = null;
+    const RESUME_DELAY = 3000;
     const updateArrowVisibility = () => {
       const maxScroll = grid.scrollWidth - grid.clientWidth;
       leftArrow.hidden = grid.scrollLeft <= 4;
       rightArrow.hidden = grid.scrollLeft >= maxScroll - 4;
     };
+    const scheduleResume = () => {
+      if (resumeTimeout) clearTimeout(resumeTimeout);
+      resumeTimeout = setTimeout(() => {
+        if (autoScrollActive) return;
+        autoScrollActive = true;
+        autoScrollFrame = requestAnimationFrame(stepAutoScroll);
+      }, RESUME_DELAY);
+    };
     const stopAutoScroll = () => {
       autoScrollActive = false;
       if (autoScrollFrame) cancelAnimationFrame(autoScrollFrame);
       autoScrollFrame = null;
+      scheduleResume();
     };
     const stepAutoScroll = () => {
       if (!autoScrollActive) return;
