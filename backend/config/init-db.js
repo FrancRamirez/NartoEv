@@ -45,13 +45,13 @@ const initDatabase = async () => {
     await connection.query(`
       CREATE TABLE IF NOT EXISTS images (
         id INT AUTO_INCREMENT PRIMARY KEY,
-        product_id INT NOT NULL,
+        publication_id INT NOT NULL,
         url VARCHAR(255) NOT NULL,
         alt_text VARCHAR(255),
         orden INT DEFAULT 0,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        FOREIGN KEY (product_id) REFERENCES publications(id) ON DELETE CASCADE,
-        INDEX idx_product_id (product_id)
+        FOREIGN KEY (publication_id) REFERENCES publications(id) ON DELETE CASCADE,
+        INDEX idx_publication_id (publication_id)
       )
     `);
     console.log('✓ Tabla "images" creada/verificada');
@@ -60,13 +60,13 @@ const initDatabase = async () => {
     await connection.query(`
       CREATE TABLE IF NOT EXISTS videos (
         id INT AUTO_INCREMENT PRIMARY KEY,
-        product_id INT NOT NULL,
+        publication_id INT NOT NULL,
         url VARCHAR(255) NOT NULL,
         titulo VARCHAR(100),
         tipo ENUM('youtube', 'vimeo', 'archivo') DEFAULT 'youtube',
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        FOREIGN KEY (product_id) REFERENCES publications(id) ON DELETE CASCADE,
-        INDEX idx_product_id (product_id)
+        FOREIGN KEY (publication_id) REFERENCES publications(id) ON DELETE CASCADE,
+        INDEX idx_publication_id (publication_id)
       )
     `);
     console.log('✓ Tabla "videos" creada/verificada');

@@ -60,11 +60,11 @@ const getUserPublications = async (req, res) => {
 
     for (const publication of publications) {
       const [images] = await connection.query(
-        "SELECT id, 'imagen' AS tipo, url, alt_text AS titulo, orden FROM images WHERE product_id = ? ORDER BY orden ASC",
+        "SELECT id, 'imagen' AS tipo, url, alt_text AS titulo, orden FROM images WHERE publication_id = ? ORDER BY orden ASC",
         [publication.id]
       );
       const [videos] = await connection.query(
-        "SELECT id, 'video' AS tipo, url, titulo, 0 AS orden FROM videos WHERE product_id = ? ORDER BY id ASC",
+        "SELECT id, 'video' AS tipo, url, titulo, 0 AS orden FROM videos WHERE publication_id = ? ORDER BY id ASC",
         [publication.id]
       );
       publication.media = [...images, ...videos];
@@ -94,11 +94,11 @@ const getPublicPublications = async (req, res) => {
 
     for (const publication of publications) {
       const [images] = await connection.query(
-        "SELECT id, 'imagen' AS tipo, url, alt_text AS titulo, orden FROM images WHERE product_id = ? ORDER BY orden ASC",
+        "SELECT id, 'imagen' AS tipo, url, alt_text AS titulo, orden FROM images WHERE publication_id = ? ORDER BY orden ASC",
         [publication.id]
       );
       const [videos] = await connection.query(
-        "SELECT id, 'video' AS tipo, url, titulo, 0 AS orden FROM videos WHERE product_id = ? ORDER BY id ASC",
+        "SELECT id, 'video' AS tipo, url, titulo, 0 AS orden FROM videos WHERE publication_id = ? ORDER BY id ASC",
         [publication.id]
       );
       publication.media = [...images, ...videos];
@@ -137,13 +137,13 @@ const getPublicationById = async (req, res) => {
 
     // Obtener imágenes asociadas
     const [images] = await connection.query(
-      'SELECT * FROM images WHERE product_id = ? ORDER BY orden ASC',
+      'SELECT * FROM images WHERE publication_id = ? ORDER BY orden ASC',
       [id]
     );
 
     // Obtener videos asociados
     const [videos] = await connection.query(
-      'SELECT * FROM videos WHERE product_id = ?',
+      'SELECT * FROM videos WHERE publication_id = ?',
       [id]
     );
 
@@ -205,8 +205,8 @@ const updatePublication = async (req, res) => {
     await connection.query(updateQuery, updateValues);
 
     if (req.files?.length) {
-      await connection.query('DELETE FROM images WHERE product_id = ?', [id]);
-      await connection.query('DELETE FROM videos WHERE product_id = ?', [id]);
+      await connection.query('DELETE FROM images WHERE publication_id = ?', [id]);
+      await connection.query('DELETE FROM videos WHERE publication_id = ?', [id]);
       await savePublicationMedia(connection, id, req.files);
     }
 
@@ -243,8 +243,8 @@ const deletePublication = async (req, res) => {
     }
 
     // Eliminar imágenes y videos asociados
-    await connection.query('DELETE FROM images WHERE product_id = ?', [id]);
-    await connection.query('DELETE FROM videos WHERE product_id = ?', [id]);
+    await connection.query('DELETE FROM images WHERE publication_id = ?', [id]);
+    await connection.query('DELETE FROM videos WHERE publication_id = ?', [id]);
 
     // Eliminar publicación
     await connection.query('DELETE FROM publications WHERE id = ?', [id]);
@@ -276,13 +276,13 @@ async function savePublicationMedia(connection, publicationId, files = []) {
     if (file.mimetype.startsWith('image/')) {
       const result = await uploadBufferToCloudinary(file.buffer, 'image');
       await connection.query(
-        'INSERT INTO images (product_id, url, alt_text, orden) VALUES (?, ?, ?, ?)',
+        'INSERT INTO images (publication_id, url, alt_text, orden) VALUES (?, ?, ?, ?)',
         [publicationId, result.secure_url, file.originalname, index]
       );
     } else if (file.mimetype.startsWith('video/')) {
       const result = await uploadBufferToCloudinary(file.buffer, 'video');
       await connection.query(
-        'INSERT INTO videos (product_id, url, titulo, tipo) VALUES (?, ?, ?, ?)',
+        'INSERT INTO videos (publication_id, url, titulo, tipo) VALUES (?, ?, ?, ?)',
         [publicationId, result.secure_url, file.originalname, 'archivo']
       );
     }
