@@ -1,33 +1,43 @@
-# NartoEV Backend
+# NartoEV — Backend
 
-API local con Node.js, Express y MySQL para administrar usuarios y productos.
+API en Node.js + Express para autenticación, gestión de usuarios y publicaciones (catálogo de cargadores con imágenes/videos).
+
+## Stack
+
+- **Base de datos:** TiDB Cloud (MySQL-compatible), base `narto_db`
+- **Almacenamiento de media:** Cloudinary (imágenes y videos de las publicaciones)
+- **Hosting:** Vercel (el backend corre como función serverless vía `api/server.js`, que exporta la app de Express directamente)
+- **Auth:** JWT + bcrypt
 
 ## Endpoints
 
-### Autenticacion
+### Autenticación (sin token)
 - `POST /api/auth/signup`
 - `POST /api/auth/login`
 - `GET /api/auth/verify`
 
-### Usuarios (admin)
-- `GET /api/users`
+### Usuarios (con token)
+- `GET /api/users` — Listar todos (solo admin)
 - `GET /api/users/:id`
 - `PUT /api/users/:id`
-- `PATCH /api/users/:id/role`
-- `DELETE /api/users/:id`
+- `PATCH /api/users/:id/role` — Cambiar rol (solo admin)
+- `DELETE /api/users/:id` (solo admin)
 
-### Productos
-- `GET /api/products/public` - Catalogo publico sin autenticacion
-- `POST /api/products` - Crear, incluyendo archivos `media`
-- `GET /api/products` - Listar productos del Admin
-- `GET /api/products/:id`
-- `PUT /api/products/:id` - Editar, incluyendo archivos `media`
-- `DELETE /api/products/:id`
+### Publicaciones
+- `GET /api/publications/public` — Listado público, sin autenticación
+- `POST /api/publications` — Crear (admin), incluyendo archivos `media` (hasta 12)
+- `GET /api/publications` — Listar publicaciones del usuario (admin)
+- `GET /api/publications/:id` (admin)
+- `PUT /api/publications/:id` — Editar, incluyendo archivos `media` (admin)
+- `DELETE /api/publications/:id` (admin)
 
-Los archivos se guardan localmente en `backend/uploads` y se sirven mediante
-`/uploads`. Cada operacion admite hasta 12 imagenes y videos.
+Los archivos de las publicaciones se suben a Cloudinary; no se guardan en disco (en Vercel el filesystem no persiste entre despliegues).
 
-## Instalacion
+### Visitas
+- `POST /api/visits/track` — Sumar una visita (sin autenticación)
+- `GET /api/visits/monthly` — Conteo del mes en curso (solo admin)
+
+## Desarrollo local
 
 ```bash
 cd backend
@@ -35,22 +45,29 @@ npm install
 npm run dev
 ```
 
-## Desarrollo local con MySQL Workbench
-
-El backend local usa el archivo `backend/.env`, que está ignorado por Git y no
-afecta las variables configuradas en Vercel. Antes de iniciarlo, completá
-`DB_PASSWORD` con la contraseña de tu usuario MySQL (y, si no usás `root`,
-actualizá también `DB_USER`).
+El backend local usa `backend/.env` (ignorado por Git; no afecta las variables configuradas en Vercel). Completar antes de iniciar:
 
 ```env
-DB_HOST=localhost
+DB_HOST=
 DB_PORT=3306
 DB_NAME=narto_db
-DB_USER=root
-DB_PASSWORD=tu_contrasena_de_mysql
-DB_SSL=false
+DB_USER=
+DB_PASSWORD=
+DB_SSL=true
+
+JWT_SECRET=
+
+CLOUDINARY_CLOUD_NAME=
+CLOUDINARY_API_KEY=
+CLOUDINARY_API_SECRET=
+
+NODE_ENV=development
+API_PORT=5000
+CORS_ORIGIN=http://localhost:3000,http://127.0.0.1:3000
 ```
 
-Luego iniciá el backend con `npm run dev`. Para ver el sitio en local, desde la
-raíz del proyecto ejecutá `python -m http.server 3000`; el frontend detecta
-`localhost` y se conecta automáticamente al backend en `http://localhost:5000`.
+Para ver el sitio en local, desde la raíz del proyecto ejecutar `python -m http.server 3000`; el frontend detecta `localhost` y se conecta automáticamente al backend en `http://localhost:5000` (ver `js/api-config.js`).
+
+## Producción
+
+Configurado en Vercel con las variables de entorno equivalentes (DB de TiDB Cloud con SSL, credenciales de Cloudinary, `JWT_SECRET`). El CORS acepta automáticamente cualquier subdominio `*.vercel.app` además de los orígenes configurados en `CORS_ORIGIN`.
